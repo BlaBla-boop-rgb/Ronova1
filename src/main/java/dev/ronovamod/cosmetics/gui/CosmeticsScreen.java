@@ -2,6 +2,8 @@ package dev.ronovamod.cosmetics.gui;
 
 import dev.ronovamod.cosmetics.CosmeticsClient;
 import dev.ronovamod.cosmetics.CosmeticsConfig;
+import dev.ronovamod.cosmetics.sky.SkyImage;
+import dev.ronovamod.cosmetics.sky.SkyPainter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -37,9 +39,11 @@ public class CosmeticsScreen extends Screen {
 
     private final List<Row> rows = new ArrayList<>();
     private int panelX, panelY, panelH;
+    private String skyStatus;
 
     public CosmeticsScreen() {
         super(Component.literal("Ronova"));
+        skyStatus = SkyImage.status();
     }
 
     @Override
@@ -53,8 +57,23 @@ public class CosmeticsScreen extends Screen {
         rows.add(toggle("Rabenschwarm", () -> c.crowSwarm, () -> c.crowSwarm = !c.crowSwarm));
         rows.add(toggle("Todesspur", () -> c.deathTrail, () -> c.deathTrail = !c.deathTrail));
 
+        rows.add(section("Himmel"));
+        rows.add(toggle("Eigenes Himmelsbild", () -> c.customSky, () -> {
+            c.customSky = !c.customSky;
+            SkyPainter.resetFailure();
+        }));
+        rows.add(toggle("Sonne, Mond & Sterne ausblenden", () -> c.hideSunMoon, () -> c.hideSunMoon = !c.hideSunMoon));
+        rows.add(toggle("Langsam drehen", () -> c.rotateSky, () -> c.rotateSky = !c.rotateSky));
+        rows.add(new Row("Bild-Wiederholungen", () -> c.skyRepeat + "x", () -> true,
+                () -> c.skyRepeat = c.skyRepeat % 4 + 1, false));
+        rows.add(new Row("Helligkeit", () -> c.skyBrightness + "%", () -> true,
+                () -> c.skyBrightness = c.skyBrightness >= 100 ? 40 : (c.skyBrightness >= 70 ? 100 : 70), false));
+        rows.add(new Row("Bild neu laden", () -> "↻", () -> true, () -> {
+            skyStatus = CosmeticsClient.reloadSky();
+            SkyPainter.resetFailure();
+        }, false));
 
-        panelH = 44 + rows.size() * (ROW_H + 2) + 34;
+        panelH = 44 + rows.size() * (ROW_H + 2) + 46;
         panelX = (this.width - PANEL_W) / 2;
         panelY = Math.max(6, (this.height - panelH) / 2);
     }
@@ -80,7 +99,7 @@ public class CosmeticsScreen extends Screen {
         // Kopfzeile
         g.fill(panelX + 12, panelY + 12, panelX + 15, panelY + 28, BORDER);
         g.text(font, "☠ Ronova – Schatten des Todes", panelX + 22, panelY + 12, TEXT, true);
-        g.text(font, "Cosmetics", panelX + 22, panelY + 23, MUTED, false);
+        g.text(font, "Cosmetics & Himmel", panelX + 22, panelY + 23, MUTED, false);
 
         int y = panelY + 44;
         for (Row row : rows) {
@@ -104,7 +123,10 @@ public class CosmeticsScreen extends Screen {
             y += ROW_H + 2;
         }
 
-        g.text(font, "Tipp: F5 für die 3rd-Person-Ansicht", panelX + 14, y + 6, MUTED, false);
+        // Statuszeile + Pfad-Hinweis
+        g.text(font, skyStatus, panelX + 14, y + 6, MUTED, false);
+        g.text(font, "Bild: .minecraft/config/ronova/sky.png", panelX + 14, y + 18, MUTED, false);
+
         // Fertig-Knopf
         int bx = panelX + PANEL_W - 90, by = panelY + panelH - 26;
         boolean hover = inside(mouseX, mouseY, bx, by, 76, 18);

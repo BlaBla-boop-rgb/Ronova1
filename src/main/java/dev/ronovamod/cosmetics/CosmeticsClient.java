@@ -2,6 +2,7 @@ package dev.ronovamod.cosmetics;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.ronovamod.cosmetics.gui.CosmeticsScreen;
+import dev.ronovamod.cosmetics.sky.SkyImage;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -50,7 +51,7 @@ public class CosmeticsClient implements ClientModInitializer {
             }));
         });
 
-        LOGGER.info("Ronova Cosmetics geladen.");
+        LOGGER.info("Ronova Cosmetics geladen. Himmelsbild: {}", CosmeticsConfig.skyImagePath());
     }
 
     /* --------------------------------------------------------------------------------------------
@@ -90,4 +91,8 @@ public class CosmeticsClient implements ClientModInitializer {
         }
     }
 
+    /** Wird vom GUI aufgerufen, wenn das Himmelsbild neu geladen werden soll. */
+    public static String reloadSky() {
+        return SkyImage.reload();
+    }
 }
